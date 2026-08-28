@@ -421,7 +421,7 @@
     }
 
     try{
-      const res = await fetch(`${API_URL}?date=${encodeURIComponent(dateStr)}`);
+      const res = await fetch(`${API_URL}?date=${encodeURIComponent(dateStr)}&_=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       const bookedTimes = Array.isArray(data.bookedTimes) ? data.bookedTimes : [];
       state.bookings = bookedTimes.map(time => ({time}));
@@ -509,6 +509,7 @@
       try{
         const res = await fetch(API_URL, {
           method: 'POST',
+          cache: 'no-store',
           // text/plain avoids a CORS preflight, which Apps Script doesn't handle
           headers: {'Content-Type': 'text/plain;charset=utf-8'},
           body: JSON.stringify(payload)
