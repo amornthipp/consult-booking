@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Consultation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --navy:#1e2a38;
+    --navy-deep:#141c26;
+    --cream:#fff1c9;
+    --blue-grey:#c9d2e3;
+    --page-bg:#ffffff;
+    --ink:#1e2a38;
+    --ink-soft:rgba(30,42,56,0.62);
+    --line:rgba(30,42,56,0.18);
+    --muted:rgba(30,42,56,0.48);
+    --muted-bg:rgba(30,42,56,0.08);
+    --danger:#8c3b2e;
+    --danger-bg:rgba(140,59,46,0.1);
+    --font-display:'Fraunces', serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page-bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+    padding:40px 16px 72px;
+  }
+
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header{margin-bottom:30px;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(30px,4vw,40px);
+    margin:0 0 12px;
+    color:var(--navy);
+  }
+  .sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    margin:0;
+    max-width:58ch;
+    line-height:1.6;
+  }
+  .sub strong{color:var(--navy);}
+
+  /* ---- Ticket ---- */
+  .ticket{
+    position:relative;
+    display:grid;
+    grid-template-columns:58% 42%;
+    background:var(--cream);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 26px 60px rgba(30,42,56,.16);
+  }
+  .ticket::before,
+  .ticket::after{
+    content:"";
+    position:absolute;
+    left:58%;
+    transform:translate(-50%,-50%);
+    width:26px;height:26px;
+    border-radius:50%;
+    background:var(--page-bg);
+    z-index:2;
+  }
+  .ticket::before{top:0;}
+  .ticket::after{top:100%;}
+
+  .ticket-main{padding:34px 32px;}
+  .ticket-stub{
+    padding:34px 30px;
+    background:var(--blue-grey);
+    position:relative;
+    border-left:2px dashed rgba(30,42,56,.3);
+  }
+
+  @media (max-width:760px){
+    .ticket{grid-template-columns:1fr;}
+    .ticket::before,.ticket::after{display:none;}
+    .ticket-stub{border-left:none; border-top:2px dashed rgba(30,42,56,.3);}
+  }
+
+  label{
+    display:block;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--navy);
+    margin-bottom:16px;
+  }
+  input[type="text"], textarea, input[type="password"]{
+    display:block;
+    width:100%;
+    margin-top:7px;
+    font-family:var(--font-body);
+    font-size:15px;
+    color:var(--ink);
+    background:#fffdf5;
+    border:1px solid var(--line);
+    border-radius:9px;
+    padding:11px 13px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea{resize:vertical; min-height:78px; line-height:1.5;}
+  input:focus, textarea:focus{
+    outline:none;
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(30,42,56,0.14);
+  }
+  input:focus-visible, textarea:focus-visible, button:focus-visible, .slot:focus-visible{
+    outline:2px solid var(--navy);
+    outline-offset:2px;
+  }
+
+  .time-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-mono);
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--navy);
+    background:#fffdf5;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px 12px;
+    margin-bottom:18px;
+  }
+  .time-chip.empty{
+    color:var(--muted);
+  }
+
+  button[type="submit"]{
+    width:100%;
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:15px;
+    color:var(--cream);
+    background:var(--navy);
+    border:none;
+    border-radius:9px;
+    padding:13px 18px;
+    cursor:pointer;
+    transition:background .15s ease, transform .1s ease;
+  }
+  button[type="submit"]:hover:not(:disabled){background:var(--navy-deep);}
+  button[type="submit"]:active:not(:disabled){transform:translateY(1px);}
+  button[type="submit"]:disabled{
+    background:var(--muted-bg);
+    color:var(--muted);
+    cursor:not-allowed;
+  }
+
+  .form-msg{
+    min-height:20px;
+    font-size:13.5px;
+    margin:12px 0 0;
+  }
+  .form-msg.error{color:var(--danger);}
+  .form-msg.info{color:var(--ink-soft);}
+
+  /* Success view */
+  .success-view{display:none;}
+  .success-view.show{display:block;}
+  .form-view.hide{display:none;}
+  .success-icon{
+    width:42px;height:42px;border-radius:50%;
+    background:var(--navy);color:var(--cream);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;margin-bottom:14px;
+  }
+  .success-view h3{
+    font-family:var(--font-display);
+    font-size:21px;margin:0 0 8px;
+    color:var(--navy);
+  }
+  .success-view p{margin:0 0 4px; font-size:14.5px; color:var(--ink-soft);}
+  .success-view .detail{color:var(--navy); font-weight:600;}
+  .success-view button{
+    margin-top:18px;
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--navy);
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:14px;
+    padding:10px 16px;
+    border-radius:9px;
+    cursor:pointer;
+  }
+  .success-view button:hover{border-color:var(--navy);}
+
+  /* Schedule stub */
+  .ticket-stub h2{
+    font-family:var(--font-display);
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 2px;
+    color:var(--navy);
+  }
+  .schedule-note{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin:0 0 18px;
+  }
+  .period-label{
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    font-weight:600;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin:0 0 8px;
+  }
+  .period-label:not(:first-child){
+    margin-top:18px;
+  }
+  .slot{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    width:100%;
+    text-align:left;
+    background:#fffdf5;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    cursor:pointer;
+    font-family:var(--font-body);
+    transition:border-color .15s ease, background .15s ease, color .15s ease;
+  }
+  .slot:last-child{margin-bottom:0;}
+  .slot .t{
+    font-family:var(--font-mono);
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .slot .status{
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--navy);
+  }
+  .slot.available:hover{border-color:var(--navy); background:#fff;}
+
+  .slot.selected{
+    background:var(--navy);
+    border-color:var(--navy);
+  }
+  .slot.selected .t,
+  .slot.selected .status{color:var(--cream);}
+
+  .slot.booked{
+    cursor:not-allowed;
+    background:transparent;
+    border:1px dashed rgba(30,42,56,.3);
+  }
+  .slot.booked .t{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--muted);}
+  .slot.booked .status{color:var(--muted);}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+
+  /* Backend note section */
+  .admin-card{
+    margin-top:22px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:26px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Consultation Booking</p>
+    <h1>Book Your Consultation</h1>
+    <p class="sub">Open only on <strong id="fixedDateLabel"></strong>. Pick a time slot — we'll check availability instantly before confirming your booking.</p>
+  </header>
+
+  <div class="ticket">
+    <div class="ticket-main">
+      <div class="form-view" id="formView">
+        <form id="bookingForm">
+          <label>Your Name
+            <input type="text" id="nameInput" placeholder="e.g. Jane Doe" required maxlength="80">
+          </label>
+          <label>What would you like to discuss?
+            <textarea id="topicInput" placeholder="Briefly describe what you'd like to consult about" required maxlength="500"></textarea>
+          </label>
+
+          <div class="time-chip empty" id="timeChip">No time selected — choose a slot from the schedule</div>
+
+          <button type="submit" id="submitBtn" disabled>Confirm Booking</button>
+          <p class="form-msg" id="formMsg"></p>
+        </form>
+      </div>
+
+      <div class="success-view" id="successView">
+        <div class="success-icon">&#10003;</div>
+        <h3>Booking Confirmed</h3>
+        <p>Name: <span class="detail" id="sumName"></span></p>
+        <p>Date: <span class="detail" id="sumDate"></span></p>
+        <p>Time: <span class="detail" id="sumTime"></span></p>
+        <p>Topic: <span class="detail" id="sumTopic"></span></p>
+        <button type="button" id="bookAgainBtn">Book Another Slot</button>
+      </div>
+    </div>
+
+    <div class="ticket-stub">
+      <h2>Schedule <span id="scheduleDateLabel"></span></h2>
+      <p class="schedule-note">Open 10:00–12:00 and 14:00–16:00, 30-minute slots</p>
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </div>
+
+  <section class="admin-card" id="adminNote">
+    <h2 style="font-family:var(--font-display); font-size:17px; margin:0 0 6px; color:var(--navy);">Looking for the full booking list?</h2>
+    <p style="margin:0; font-size:13.5px; color:var(--ink-soft); line-height:1.6;">
+      Every booking (with name and topic) is logged in the connected Google Sheet in real time — open it directly to view, sort, filter, or export the full list.
+      <span id="sheetLinkWrap"></span>
+    </p>
+  </section>
+</div>
+
+<script>
+  const SLOTS = [
+    {start:"10:00", end:"10:30", period:"Morning"},
+    {start:"10:30", end:"11:00", period:"Morning"},
+    {start:"11:00", end:"11:30", period:"Morning"},
+    {start:"11:30", end:"12:00", period:"Morning"},
+    {start:"14:00", end:"14:30", period:"Afternoon"},
+    {start:"14:30", end:"15:00", period:"Afternoon"},
+    {start:"15:00", end:"15:30", period:"Afternoon"},
+    {start:"15:30", end:"16:00", period:"Afternoon"}
+  ];
+
+  const BOOKABLE_DATE = "2026-09-14"; // the only bookable date
+
+  // ---- Backend config ----
+  // Paste the URL you get after deploying the Apps Script as a Web App (ends in /exec).
+  const API_URL = "https://script.google.com/macros/s/AKfycbxUM6PjBsUcyjbryVec4xpIahKnzn8CJPPKfR2EQ12kgAS7PWP5rjbZHhluHd-YrhPvXg/exec";
+  // Optional: paste your Google Sheet's normal share URL so visitors can jump to it.
+  const SHEET_URL = "";
+
+  const state = {
+    date: null,
+    selectedTime: null,
+    bookings: [],
+    loading: false
+  };
+
+  const nameInput = document.getElementById('nameInput');
+  const topicInput = document.getElementById('topicInput');
+  const timeline = document.getElementById('timeline');
+  const timeChip = document.getElementById('timeChip');
+  const submitBtn = document.getElementById('submitBtn');
+  const formMsg = document.getElementById('formMsg');
+  const form = document.getElementById('bookingForm');
+  const formView = document.getElementById('formView');
+  const successView = document.getElementById('successView');
+  const scheduleDateLabel = document.getElementById('scheduleDateLabel');
+  const fixedDateLabel = document.getElementById('fixedDateLabel');
+  const bookAgainBtn = document.getElementById('bookAgainBtn');
+  const sheetLinkWrap = document.getElementById('sheetLinkWrap');
+
+  function isConfigured(){
+    return typeof API_URL === 'string' && API_URL.indexOf('https://script.google.com') === 0;
+  }
+
+  function formatDate(dateStr){
+    const d = new Date(dateStr + 'T00:00:00');
+    try{
+      return new Intl.DateTimeFormat('en-US', {
+        weekday:'long', day:'numeric', month:'long', year:'numeric'
+      }).format(d);
+    }catch(e){
+      return dateStr;
+    }
+  }
+
+  async function loadBookings(dateStr){
+    state.loading = true;
+    renderTimeline();
+
+    if(!isConfigured()){
+      state.bookings = [];
+      state.loading = false;
+      renderTimeline();
+      return;
+    }
+
+    try{
+      const res = await fetch(`${API_URL}?date=${encodeURIComponent(dateStr)}`);
+      const data = await res.json();
+      const bookedTimes = Array.isArray(data.bookedTimes) ? data.bookedTimes : [];
+      state.bookings = bookedTimes.map(time => ({time}));
+    }catch(e){
+      console.error('Failed to load schedule:', e);
+      state.bookings = [];
+    }
+    state.loading = false;
+    renderTimeline();
+  }
+
+  function isBooked(time){
+    return state.bookings.some(b => b.time === time);
+  }
+
+  function renderTimeline(){
+    scheduleDateLabel.textContent = state.date ? `— ${formatDate(state.date)}` : '';
+
+    if(!isConfigured()){
+      timeline.innerHTML = `<p style="color:var(--danger); font-size:13.5px; line-height:1.5;">Backend not connected yet — paste your Apps Script Web App URL into the <code>API_URL</code> constant near the top of the script.</p>`;
+      return;
+    }
+
+    if(state.loading){
+      timeline.innerHTML = `<p style="color:var(--muted); font-size:13.5px;">Loading schedule...</p>`;
+      return;
+    }
+
+    let lastPeriod = null;
+    timeline.innerHTML = SLOTS.map(slot => {
+      const booked = isBooked(slot.start);
+      const selected = state.selectedTime === slot.start;
+      let cls = 'slot';
+      let status = 'Available';
+      if(booked){ cls += ' booked'; status = 'Booked'; }
+      else if(selected){ cls += ' selected'; status = 'Selected'; }
+      else { cls += ' available'; }
+
+      let groupHeader = '';
+      if(slot.period !== lastPeriod){
+        groupHeader = `<div class="period-label">${slot.period}</div>`;
+        lastPeriod = slot.period;
+      }
+
+      return `${groupHeader}<button type="button" class="${cls}" data-time="${slot.start}" ${booked ? 'disabled' : ''}>
+        <span class="t">${slot.start} – ${slot.end}</span>
+        <span class="status">${status}</span>
+      </button>`;
+    }).join('');
+  }
+
+  timeline.addEventListener('click', (e) => {
+    const el = e.target.closest('.slot');
+    if(!el || el.disabled) return;
+    state.selectedTime = el.dataset.time;
+    renderTimeline();
+    updateTimeChip();
+    updateSubmitState();
+  });
+
+  function updateTimeChip(){
+    if(state.selectedTime){
+      const slot = SLOTS.find(s => s.start === state.selectedTime);
+      timeChip.textContent = `Selected time: ${slot.start} – ${slot.end}`;
+      timeChip.classList.remove('empty');
+    } else {
+      timeChip.textContent = 'No time selected — choose a slot from the schedule';
+      timeChip.classList.add('empty');
+    }
+  }
+
+  function updateSubmitState(){
+    const ready = nameInput.value.trim() && topicInput.value.trim() && state.selectedTime && !state.loading;
+    submitBtn.disabled = !ready;
+  }
+
+  nameInput.addEventListener('input', updateSubmitState);
+  topicInput.addEventListener('input', updateSubmitState);
+
+  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+  async function postWithRetry(payload, attempts = 3){
+    let lastErr = null;
+    for(let i = 0; i < attempts; i++){
+      try{
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          // text/plain avoids a CORS preflight, which Apps Script doesn't handle
+          headers: {'Content-Type': 'text/plain;charset=utf-8'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        return data;
+      }catch(err){
+        lastErr = err;
+      }
+      if(i < attempts - 1) await wait(400 * (i + 1));
+    }
+    throw lastErr || new Error('save failed');
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formMsg.textContent = '';
+    formMsg.className = 'form-msg';
+
+    if(!isConfigured()){
+      formMsg.textContent = "Backend not connected yet — see the setup steps to connect your Google Sheet.";
+      formMsg.className = 'form-msg error';
+      return;
+    }
+
+    const name = nameInput.value.trim();
+    const topic = topicInput.value.trim();
+    const time = state.selectedTime;
+
+    if(!name || !topic || !time){
+      formMsg.textContent = 'Please fill in all fields and select a time.';
+      formMsg.className = 'form-msg error';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+
+    try{
+      // The server re-checks availability under a lock, so this call is the
+      // single source of truth for whether the slot was actually free.
+      const data = await postWithRetry({ date: state.date, time, name, topic });
+
+      if(!data || data.ok !== true){
+        if(data && data.error === 'slot_taken'){
+          state.selectedTime = null;
+          formMsg.textContent = 'Sorry, that slot was just booked. Please choose another time.';
+          formMsg.className = 'form-msg error';
+          await loadBookings(state.date);
+          updateTimeChip();
+          submitBtn.textContent = 'Confirm Booking';
+          updateSubmitState();
+          return;
+        }
+        throw new Error((data && data.error) || 'save failed');
+      }
+
+      // show success view
+      document.getElementById('sumName').textContent = name;
+      document.getElementById('sumDate').textContent = formatDate(state.date);
+      const slot = SLOTS.find(s => s.start === time);
+      document.getElementById('sumTime').textContent = `${slot.start} – ${slot.end}`;
+      document.getElementById('sumTopic').textContent = topic;
+
+      formView.classList.add('hide');
+      successView.classList.add('show');
+
+      await loadBookings(state.date);
+    }catch(err){
+      console.error('Booking save failed:', err);
+      formMsg.textContent = 'Something went wrong saving your booking. Please try again — your details are still filled in above.';
+      formMsg.className = 'form-msg error';
+    } finally {
+      submitBtn.textContent = 'Confirm Booking';
+      updateSubmitState();
+    }
+  });
+
+  bookAgainBtn.addEventListener('click', () => {
+    form.reset();
+    state.selectedTime = null;
+    successView.classList.remove('show');
+    formView.classList.remove('hide');
+    formMsg.textContent = '';
+    updateTimeChip();
+    updateSubmitState();
+    loadBookings(state.date);
+  });
+
+  // init
+  (function init(){
+    state.date = BOOKABLE_DATE;
+    fixedDateLabel.textContent = formatDate(BOOKABLE_DATE);
+    updateTimeChip();
+    updateSubmitState();
+    loadBookings(BOOKABLE_DATE);
+
+    if(SHEET_URL){
+      sheetLinkWrap.innerHTML = ` <a href="${SHEET_URL}" target="_blank" rel="noopener" style="color:var(--navy); font-weight:600;">Open the sheet →</a>`;
+    }
+  })();
+</script>
+</body>
+</html>
